@@ -21,12 +21,14 @@ app.use((req, res, next) => {
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1opb9YsEQEOf-FaMdmX-v1bXV63i8Qnt17XIp7dUmce8';
 
-// يقرأ credentials من متغير البيئة (Railway/production) أو من ملف محلي (development)
-const authConfig = process.env.GOOGLE_CREDENTIALS
-  ? { credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS), scopes: ['https://www.googleapis.com/auth/spreadsheets'] }
-  : { keyFile: path.join(__dirname, 'credentials.json'),        scopes: ['https://www.googleapis.com/auth/spreadsheets'] };
+const credentials = process.env.GOOGLE_CREDENTIALS
+  ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+  : require('./credentials.json');
 
-const auth = new google.auth.GoogleAuth(authConfig);
+const auth = new google.auth.GoogleAuth({
+  credentials,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
 
 async function getSheets() {
   const client = await auth.getClient();
