@@ -4,6 +4,10 @@ const { google } = require('googleapis');
 const path = require('path');
 require('dotenv').config();
 
+console.log('CREDENTIALS TYPE:', typeof process.env.GOOGLE_CREDENTIALS);
+console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID || '(using hardcoded)');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -54,7 +58,8 @@ app.get('/api/tasks', async (req, res) => {
     });
     res.json({ data: response.data.values || [] });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[GET /api/tasks]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
@@ -71,7 +76,8 @@ app.post('/api/tasks', async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[POST /api/tasks]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
@@ -99,7 +105,8 @@ app.patch('/api/tasks/:row', async (req, res) => {
     });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[PATCH /api/tasks]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
@@ -113,7 +120,8 @@ app.get('/api/projects', async (req, res) => {
     });
     res.json({ data: response.data.values || [] });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[GET /api/projects]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
@@ -127,7 +135,8 @@ app.get('/api/habits', async (req, res) => {
     });
     res.json({ data: response.data.values || [] });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[GET /api/habits]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
@@ -183,7 +192,8 @@ async function handleSetup(req, res) {
 
     res.json({ success: true, created: headersToAdd.map(s => s.name) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[/api/setup]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 }
 
@@ -219,7 +229,8 @@ app.delete('/api/tasks/:row', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[DELETE /api/tasks]', err.message, err.stack);
+    res.status(500).json({ error: err.message, details: err.stack });
   }
 });
 
