@@ -21,9 +21,18 @@ app.use((req, res, next) => {
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1opb9YsEQEOf-FaMdmX-v1bXV63i8Qnt17XIp7dUmce8';
 
-const credentials = process.env.GOOGLE_CREDENTIALS
-  ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
-  : require('./credentials.json');
+let credentials;
+if (process.env.GOOGLE_CREDENTIALS) {
+  try {
+    credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  } catch (e) {
+    console.error('❌ GOOGLE_CREDENTIALS parse error:', e.message);
+    console.error('First 100 chars:', process.env.GOOGLE_CREDENTIALS.slice(0, 100));
+    process.exit(1);
+  }
+} else {
+  credentials = require('./credentials.json');
+}
 
 const auth = new google.auth.GoogleAuth({
   credentials,
@@ -122,8 +131,8 @@ app.get('/api/habits', async (req, res) => {
   }
 });
 
-// POST /api/setup — ينشئ الأوراق مع headers إذا لم تكن موجودة
-app.post('/api/setup', async (req, res) => {
+// GET & POST /api/setup — ينشئ الأوراق مع headers إذا لم تكن موجودة
+async function handleSetup(req, res) {
   try {
     const sheets = await getSheets();
     const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
@@ -176,7 +185,10 @@ app.post('/api/setup', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+}
+
+app.get('/api/setup', handleSetup);
+app.post('/api/setup', handleSetup);
 
 // DELETE /api/tasks/:row — يحذف الصف كاملاً من ورقة المهام
 app.delete('/api/tasks/:row', async (req, res) => {
