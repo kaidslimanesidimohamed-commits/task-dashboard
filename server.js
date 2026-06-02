@@ -25,23 +25,19 @@ app.use((req, res, next) => {
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1opb9YsEQEOf-FaMdmX-v1bXV63i8Qnt17XIp7dUmce8';
 
-let credentials;
+let auth;
 if (process.env.GOOGLE_CREDENTIALS) {
-  try {
-    credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-  } catch (e) {
-    console.error('❌ GOOGLE_CREDENTIALS parse error:', e.message);
-    console.error('First 100 chars:', process.env.GOOGLE_CREDENTIALS.slice(0, 100));
-    process.exit(1);
-  }
+  const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  auth = new google.auth.GoogleAuth({
+    credentials: creds,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
 } else {
-  credentials = require('./credentials.json');
+  auth = new google.auth.GoogleAuth({
+    keyFile: './credentials.json',
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
 }
-
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
 
 async function getSheets() {
   const client = await auth.getClient();
