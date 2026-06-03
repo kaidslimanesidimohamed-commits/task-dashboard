@@ -25,23 +25,21 @@ app.use((req, res, next) => {
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1opb9YsEQEOf-FaMdmX-v1bXV63i8Qnt17XIp7dUmce8';
 
-let auth;
-if (process.env.GOOGLE_CREDENTIALS) {
-  const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-  auth = new google.auth.GoogleAuth({
-    credentials: creds,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-} else {
-  auth = new google.auth.GoogleAuth({
-    keyFile: './credentials.json',
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-}
+const creds = process.env.GOOGLE_CREDENTIALS
+  ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+  : require('./credentials.json');
+
+console.log('client_email:', creds.client_email);
+console.log('private_key present:', !!creds.private_key);
+
+const auth = new google.auth.JWT({
+  email: creds.client_email,
+  key: creds.private_key,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
 
 async function getSheets() {
-  const client = await auth.getClient();
-  return google.sheets({ version: 'v4', auth: client });
+  return google.sheets({ version: 'v4', auth });
 }
 
 // GET /api/tasks
